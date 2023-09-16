@@ -71,13 +71,7 @@ jobs:
     steps:
       - name: Setup source
         run: repo init --depth=1 --no-repo-verify -u https://github.com/ricedroidOSS/android -b thirteen -g default,-mips,-darwin,-notdefault || echo "Already done"
-        
-  Build_rom_vanilla:
-     runs-on: self-hosted
-     needs: [Sync_source, depends, Clang, Device_tree, Vendor_tree, Kernel_tree, FMRadio, Viper]
-     steps:
-       - name: Build Vanilla
-         run: . build/envsetup.sh && lunch lineage_vince-user && mka bacon | tee log.txt
+         . build/envsetup.sh && lunch cherish_pdx225-user && mka bacon | tee log.txt
         
   Build_rom_gapps:
     runs-on: self-hosted
