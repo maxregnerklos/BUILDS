@@ -1,9 +1,11 @@
 name: Vince RiceDroid old
 on:
-  seed-workflows
-  
+  push:
+    branches:
+      - 'seed-workflows'
+
 concurrency:
-  group: ${{  github.ref }}
+  group: ${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -14,79 +16,81 @@ jobs:
         run: |
           git config --global user.email "rom-builder@rest.eu.org"
           git config --global user.name "ROM BUILDER"
-          git config --global pull.rebase true  
+          git config --global pull.rebase true
           sudo apt-get update -y && sudo apt-get install repo -y
-          
+
   depends:
     runs-on: self-hosted
     steps:
-      - name: Install requirerd dependencies
+      - name: Install required dependencies
         run: sudo apt-get install git-core gnupg flex bison build-essential zip curl zlib1g-dev libc6-dev-i386 libncurses5 lib32ncurses5-dev x11proto-core-dev libx11-dev lib32z1-dev libgl1-mesa-dev libxml2-utils xsltproc unzip openssl libssl-dev fontconfig -y
-        
+
   Device_tree:
     runs-on: self-hosted
     needs: Repo_git
     steps:
       - name: Clone Device Tree
-        run: git clone https://github.com/XperiaBrickers-10IV/device_sony_pdx225 -b Cherish device/sony/pdx225 || ( cd device/sony/pdx225 && git fetch && git pull )
-             git clone https://github.com/XperiaBrickers-10IV/device_sony_murray -b Cherish device/sony/murray
+        run: |
+          git clone https://github.com/XperiaBrickers-10IV/device_sony_pdx225 -b Cherish device/sony/pdx225 || ( cd device/sony/pdx225 && git fetch && git pull )
+          git clone https://github.com/XperiaBrickers-10IV/device_sony_murray -b Cherish device/sony/murray
+
   Vendor_tree:
     runs-on: self-hosted
     needs: Repo_git
     steps:
       - name: Clone Vendor Tree
-        run: git clone https://github.com/XperiaBrickers-10IV/vendor_sony_pdx225 -b main vendor/sony/pd225 || ( cd vendor/xiaomi/vince && git fetch && git pull )
-      
+        run: git clone https://github.com/XperiaBrickers-10IV/vendor_sony_pdx225 -b main vendor/sony/pd225 || ( cd vendor/sony/pd225 && git fetch && git pull )
+
   Kernel_tree:
     runs-on: self-hosted
     needs: Repo_git
     steps:
       - name: Clone Kernel Tree
-        run: git clone https://github.com/XperiaBrickers-10IV/kernel_sony_murray -b master kernel/sony/murray || ( cd kernel/xiaomi/vince && git fetch && git pull )
-      
+        run: git clone https://github.com/XperiaBrickers-10IV/kernel_sony_murray -b master kernel/sony/murray || ( cd kernel/sony/murray && git fetch && git pull )
+
   Clang:
     runs-on: self-hosted
     needs: Repo_git
     steps:
       - name: Fetch clang
         run: git clone --depth=1 https://gitlab.com/anandhan07/aosp-clang.git -b clang-15.0.3 prebuilts/clang/host/linux-x86/clang-r468909b || ( cd prebuilts/clang/host/linux-x86/clang-r468909b && git fetch && git pull )
-  
+
   FMRadio:
     runs-on: self-hosted
     needs: Repo_git
     steps:
       - name: Fetch Revamped FM Radio
-        run: git clone --depth=1 https://github.com/iusmac/RevampedFMRadio -b qcom packages/apps/RevampedFMRadio || (cd packages/apps/RevampedFMRadio && git fetch && git pull)   
-  
+        run: git clone --depth=1 https://github.com/iusmac/RevampedFMRadio -b qcom packages/apps/RevampedFMRadio || ( cd packages/apps/RevampedFMRadio && git fetch && git pull )
+
   Viper:
     runs-on: self-hosted
     needs: Repo_git
     steps:
       - name: Fetch ViperFX
-        run: git clone --depth=1 https://gitlab.com/anandhan07/packages_apps_ViPER4AndroidFX.git -b master packages/apps/ViPER4AndroidFX || (cd packages/apps/ViPER4AndroidFX && git fetch && git pull)
+        run: git clone --depth=1 https://gitlab.com/anandhan07/packages_apps_ViPER4AndroidFX.git -b master packages/apps/ViPER4AndroidFX || ( cd packages/apps/ViPER4AndroidFX && git fetch && git pull )
 
   Setup_source:
     runs-on: self-hosted
     needs: [Repo_git]
     steps:
       - name: Setup source
-        run: repo init --depth=1 --no-repo-verify -u https://github.com/ricedroidOSS/android -b thirteen -g default,-mips,-darwin,-notdefault || echo "Already done"
-         . build/envsetup.sh && lunch cherish_pdx225-user && mka bacon | tee log.txt
+        run: |
+          repo init --depth=1 --no-repo-verify -u https://github.com/ricedroidOSS/android -b thirteen -g default,-mips,-darwin,-notdefault || echo "Already done"
+          . build/envsetup.sh && lunch cherish_pdx225-user && mka bacon | tee log.txt
 
-        
   Release:
     runs-on: self-hosted
     steps:
-        - name: Prepare tag
-          id: tag_code
-          run: echo "TAG=$(date +'v%d-%m-%Y-%H%M%S')" >> $GITHUB_OUTPUT
-          
-        - name: Upload modules to release
-          uses: svenstaro/upload-release-action@v2
-          with:
-            repo_token: ${{ secrets.RELEASE_TOKEN }}
-            repo_name: rom-builder/Vince-RiceDroid
-            tag: ${{ steps.tag_code.outputs.TAG }}
-            release_name: ${{ steps.tag_code.outputs.TAG }}
-            file_glob: true
-            file: out/target/product/vince/riceDroid*
+      - name: Prepare tag
+        id: tag_code
+        run: echo "TAG=$(date +'v%d-%m-%Y-%H%M%S')" >> $GITHUB_ENV
+
+      - name: Upload modules to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.RELEASE_TOKEN }}
+          repo_name: rom-builder/Vince-RiceDroid
+          tag: ${{ steps.tag_code.outputs.TAG }}
+          release_name: ${{ steps.tag_code.outputs.TAG }}
+          file_glob: true
+          file: out/target/product/vince/riceDroid*
