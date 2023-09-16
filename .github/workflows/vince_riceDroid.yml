@@ -28,21 +28,21 @@ jobs:
     needs: Repo_git
     steps:
       - name: Clone Device Tree
-        run: git clone https://github.com/anandhan07/android_device_xiaomi_vince -b ricedroid-13.0 device/xiaomi/vince || ( cd device/xiaomi/vince && git fetch && git pull )
-        
+        run: git clone https://github.com/XperiaBrickers-10IV/device_sony_pdx225 -b Cherish device/sony/pdx225 || ( cd device/sony/pdx225 && git fetch && git pull )
+             git clone https://github.com/XperiaBrickers-10IV/device_sony_murray -b Cherish device/sony/murray
   Vendor_tree:
     runs-on: self-hosted
     needs: Repo_git
     steps:
       - name: Clone Vendor Tree
-        run: git clone https://github.com/anandhan07/android_vendor_xiaomi_vince -b 13.0 vendor/xiaomi/vince || ( cd vendor/xiaomi/vince && git fetch && git pull )
+        run: git clone https://github.com/XperiaBrickers-10IV/vendor_sony_pdx225 -b main vendor/sony/pd225 || ( cd vendor/xiaomi/vince && git fetch && git pull )
       
   Kernel_tree:
     runs-on: self-hosted
     needs: Repo_git
     steps:
       - name: Clone Kernel Tree
-        run: git clone https://github.com/GhostMaster69-dev/android_kernel_xiaomi_vince -b master kernel/xiaomi/vince || ( cd kernel/xiaomi/vince && git fetch && git pull )
+        run: git clone https://github.com/XperiaBrickers-10IV/kernel_sony_murray -b master kernel/sony/murray || ( cd kernel/xiaomi/vince && git fetch && git pull )
       
   Clang:
     runs-on: self-hosted
@@ -72,29 +72,19 @@ jobs:
       - name: Setup source
         run: repo init --depth=1 --no-repo-verify -u https://github.com/ricedroidOSS/android -b thirteen -g default,-mips,-darwin,-notdefault || echo "Already done"
         
-  Sync_source:
-    runs-on: self-hosted
-    needs: Setup_source
-    steps:
-      - name: Delete existing builds folders
-        run: rm -rf out/target/product/vince || echo "Doesn't exist"
-        
-      - name: Sync source
-        run: repo sync -c --no-clone-bundle --force-remove-dirty --optimized-fetch --prune --force-sync -j8
-        
   Build_rom_vanilla:
-    runs-on: self-hosted
-    needs: [Sync_source, depends, Clang, Device_tree, Vendor_tree, Kernel_tree, FMRadio, Viper]
-    steps:
-      - name: Build Vanilla
-        run: . build/envsetup.sh && lunch lineage_vince-user && mka bacon | tee log.txt
+     runs-on: self-hosted
+     needs: [Sync_source, depends, Clang, Device_tree, Vendor_tree, Kernel_tree, FMRadio, Viper]
+     steps:
+       - name: Build Vanilla
+         run: . build/envsetup.sh && lunch lineage_vince-user && mka bacon | tee log.txt
         
   Build_rom_gapps:
     runs-on: self-hosted
     needs: Build_rom_vanilla
     steps:
       - name: Build Gapps
-        run: . build/envsetup.sh && lunch lineage_vince-user && export WITH_GMS=true && mka bacon | tee log.txt
+        run: . build/envsetup.sh && lunch cherish_pdx225-user && export WITH_GMS=true && mka bacon | tee log.txt
         
   Release:
     runs-on: self-hosted
