@@ -72,17 +72,10 @@ jobs:
       - name: Setup source
         run: repo init --depth=1 --no-repo-verify -u https://github.com/ricedroidOSS/android -b thirteen -g default,-mips,-darwin,-notdefault || echo "Already done"
          . build/envsetup.sh && lunch cherish_pdx225-user && mka bacon | tee log.txt
-        
-  Build_rom_gapps:
-    runs-on: self-hosted
-    needs: Build_rom_vanilla
-    steps:
-      - name: Build Gapps
-        run: . build/envsetup.sh && lunch cherish_pdx225-user && export WITH_GMS=true && mka bacon | tee log.txt
+
         
   Release:
     runs-on: self-hosted
-    needs: [Build_rom_vanilla, Build_rom_gapps]
     steps:
         - name: Prepare tag
           id: tag_code
