@@ -1,6 +1,6 @@
 name: Vince RiceDroid old
 on:
-  workflow_dispatch
+  ubuntu-latest
   
 concurrency:
   group: ${{  github.ref }}
