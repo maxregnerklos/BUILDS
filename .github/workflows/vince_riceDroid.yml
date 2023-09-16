@@ -1,6 +1,6 @@
 name: Vince RiceDroid old
 on:
-  ubuntu-latest
+  seed-workflows
   
 concurrency:
   group: ${{  github.ref }}
